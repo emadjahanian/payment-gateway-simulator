@@ -1,0 +1,12 @@
+server:
+  port: 2020
+spring:
+  config:
+    location: classpath:/,file:./
+  application:
+    name: Payment Gateway Simulator
+  profiles:
+    active: "@activatedProperties@"
+
+application:
+  version: 1.0.0
