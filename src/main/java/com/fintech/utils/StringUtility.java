@@ -1,4 +1,4 @@
-package com.fintech.configuration;
+package com.fintech.utils;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;

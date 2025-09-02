@@ -1,6 +1,9 @@
 package com.fintech;
 
-import com.fintech.configuration.StringUtility;
+import com.fintech.configuration.CommandLineDecryptionHandler;
+import com.fintech.utils.StringUtility;
+import com.ulisesbocchio.jasyptspringboot.environment.StandardEncryptableEnvironment;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
@@ -10,27 +13,32 @@ import org.springframework.core.env.Environment;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.security.Security;
 import java.util.HashMap;
 import java.util.Map;
 
 @SpringBootApplication
-public class Application {
+public class PaymentGatewayApplication {
 
-    private static final Logger log = LoggerFactory.getLogger(Application.class);
+    private static final Logger log = LoggerFactory.getLogger(PaymentGatewayApplication.class);
     private static final String SPRING_PROFILE_DEFAULT = "spring.profiles.default";
     private static final String SPRING_PROFILE_DEVELOPMENT = "dev";
 
     public static void main(String[] args) {
-        System.setProperty("spring.devtools.restart.enabled", "false");
+        System.setProperty("spring.devtools.restart.enabled","false");
+
+        Security.addProvider(new BouncyCastleProvider());
+        String[] modifiedArgs = new CommandLineDecryptionHandler(args).getApplicationArgs();
+
         SpringApplication app = new SpringApplicationBuilder()
-                .sources(Application.class)
-                .build();
-
+                .environment(new StandardEncryptableEnvironment())
+                .sources(PaymentGatewayApplication.class).build();
         addDefaultProfile(app);
-        Environment env = app.run(args).getEnvironment();
+        Environment env = app.run(modifiedArgs).getEnvironment();
         logApplicationStartup(env);
-    }
 
+
+    }
     private static void logApplicationStartup(Environment env) {
         String protocol = "http";
         try {
@@ -78,6 +86,7 @@ public class Application {
                         "Config Server: \t{}\n----------------------------------------------------------",
                 configServerStatus + " " + configServerURL);
     }
+
 
     public static void addDefaultProfile(SpringApplication app) {
         Map<String, Object> defProperties = new HashMap<>();

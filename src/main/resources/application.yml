@@ -1,6 +1,50 @@
+################################################### Encryption ####################################################
+jasypt:
+  encryptor:
+    salt-generator-classname: org.jasypt.salt.RandomSaltGenerator
+    password: ${com.fintech.jasypt.pass}
+    algorithm: ${com.fintech.jasypt.algorithm}
+    pool-size: 1
+    key-obtention-iterations: 1000
+    iv-generator-classname: org.jasypt.iv.NoIvGenerator
+######################################################## Keycloak ###################################################
+keycloak:
+  auth-server-url: ${KEYCLOAK_URL}:${KEYCLOAK_PORT}
+  realm: gw-services
+  resource: service-1
+  credentials:
+    secret: ENC(pMysZD0o3ukiXW74kHtHt9pUk58Umnj8z3guahSYLiNOTYJC5GFKJcwOhRCCaWCY)
+  bearer-only: true
+
+###################################################### Swagger / OpenAPI ############################################
+springdoc:
+  oAuthFlow:
+    authorization-url: ""
+    token-url: ${KEYCLOAK_URL}:${KEYCLOAK_PORT}/realms/gw-services/protocol/openid-connect/token
+    client-id: service-1
+    client-secret: ENC(pMysZD0o3ukiXW74kHtHt9pUk58Umnj8z3guahSYLiNOTYJC5GFKJcwOhRCCaWCY)
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    oauth:
+      client-id: ${keycloak.resource}
+      client-secret: ${keycloak.credentials.secret}
+    disable-swagger-default-url: true
+    oauth2-redirect-url: ${KEYCLOAK_URL}:8085
+    path: /swagger-ui.html
+
+###################################################### Spring Config ###################################################
 server:
   port: 2020
+
 spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_URL}:${KEYCLOAK_PORT}/realms/gw-services
+          jwk-set-uri: ${KEYCLOAK_URL}:${KEYCLOAK_PORT}/realms/gw-services/protocol/openid-connect/certs
+
   config:
     location: classpath:/,file:./
   application:
@@ -8,5 +52,6 @@ spring:
   profiles:
     active: "@activatedProperties@"
 
+###################################################### Application #####################################################
 application:
   version: 1.0.0
